@@ -20,9 +20,10 @@ use std::time::{SystemTime, UNIX_EPOCH};
 use client_check::{
     client_check_code_reference_count, client_check_indicator_count, client_check_indicator_keys,
     has_unsafe_client_check_remainder, is_partial_client_check_support,
-    is_warning_client_check_support, log_battleye_signature_report, log_client_check_support_summary,
-    patch_state_by_name, strong_unsupported_evidence_count, strong_unsupported_evidence_keys,
-    suspicious_active_evidence_keys, suspicious_active_indicator_keys,
+    is_warning_client_check_support, log_battleye_signature_report,
+    log_client_check_support_summary, patch_state_by_name, strong_unsupported_evidence_count,
+    strong_unsupported_evidence_keys, suspicious_active_evidence_keys,
+    suspicious_active_indicator_keys,
 };
 use config::{resolve_config_values, sync_config_ini};
 use patterns::{battleye_patches, patchable_battleye_patch_count};
@@ -87,9 +88,19 @@ pub fn edit_client(
         original_tibia_binary.clone()
     };
 
-    let backup_path = backup_executable(&mut log, &tibia_path, &backup_binary, aggressive_client_check)?;
+    let backup_path = backup_executable(
+        &mut log,
+        &tibia_path,
+        &backup_binary,
+        aggressive_client_check,
+    )?;
     export_modified_file(&mut log, &tibia_path, &tibia_binary, original_binary_size)?;
-    sync_config_ini(&mut log, &tibia_path, &original_tibia_binary, &config_values)?;
+    sync_config_ini(
+        &mut log,
+        &tibia_path,
+        &original_tibia_binary,
+        &config_values,
+    )?;
 
     log_edit_success(&mut log, &diagnosis, strict_client_check);
 
@@ -197,7 +208,10 @@ fn export_modified_file(
         ));
     }
     std::fs::write(tibia_path, tibia_binary).map_err(EditError::Io)?;
-    log.info(format!("Patched file exported to: {}", tibia_path.display()));
+    log.info(format!(
+        "Patched file exported to: {}",
+        tibia_path.display()
+    ));
     Ok(())
 }
 
@@ -238,7 +252,9 @@ fn enforce_edit_client_check_policy(
             log.error("Re-run diagnose and inspect Suspicious active client-check candidates before using this client");
             return Err(EditError::WarningStrict);
         }
-        log.warn("WARNING support - client-check branch/call candidates remain after the known patch");
+        log.warn(
+            "WARNING support - client-check branch/call candidates remain after the known patch",
+        );
         log.warn("Client-check paths may still be active. Test recommended.");
         log.warn(format!("Verdict: {verdict}"));
         return Ok(());
@@ -296,7 +312,10 @@ fn print_diagnosis_comparison(
         "Comparative diagnosis: baseline={} target={}",
         baseline.path, target.path
     ));
-    log.info(format!("Size delta: {:+} bytes", target.size as i64 - baseline.size as i64));
+    log.info(format!(
+        "Size delta: {:+} bytes",
+        target.size as i64 - baseline.size as i64
+    ));
     if baseline.sha256 == target.sha256 {
         log.info("SHA256: identical");
     } else {
@@ -340,8 +359,7 @@ fn print_diagnosis_comparison(
     ));
     log.info(format!(
         "Suspicious active candidates: baseline={} target={}",
-        baseline.suspicious_active_evidence_count,
-        target.suspicious_active_evidence_count,
+        baseline.suspicious_active_evidence_count, target.suspicious_active_evidence_count,
     ));
 
     let new_indicators = difference_strings(

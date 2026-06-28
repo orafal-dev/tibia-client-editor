@@ -27,9 +27,14 @@ pub fn inspect_pe(data: &[u8]) -> PeInfo {
                 let virtual_size = section.virtual_size as usize;
                 let size = section.size_of_raw_data as usize;
                 let virtual_size = virtual_size.max(size);
-                let name = section.name().unwrap_or("").trim_end_matches('\0').to_string();
+                let name = section
+                    .name()
+                    .unwrap_or("")
+                    .trim_end_matches('\0')
+                    .to_string();
                 let characteristics = section.characteristics;
-                let is_code = characteristics & 0x00000020 != 0 || characteristics & 0x20000000 != 0;
+                let is_code =
+                    characteristics & 0x00000020 != 0 || characteristics & 0x20000000 != 0;
                 sections.push(PeSectionInfo {
                     name,
                     raw_start,

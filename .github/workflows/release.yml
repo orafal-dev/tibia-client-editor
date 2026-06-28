@@ -1,0 +1,80 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+jobs:
+  release-windows:
+    permissions:
+      contents: write
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.3.10
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Rust cache
+        uses: swatinem/rust-cache@v2
+        with:
+          workspaces: ./src-tauri -> target
+
+      - name: Install frontend dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Build and publish Windows release
+        id: tauri
+        uses: tauri-apps/tauri-action@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
+        with:
+          tauriScript: bun run tauri
+          tagName: ${{ github.ref_name }}
+          releaseName: Tibia Client Editor ${{ github.ref_name }}
+          releaseBody: |
+            ## Windows install
+
+            Download the NSIS installer (`*-setup.exe`) for a fresh install.
+
+            ## Auto-update
+
+            Existing installs use `latest.json` and the signed updater bundle from this release.
+
+            | Asset | Purpose |
+            | --- | --- |
+            | `Tibia Client Editor_*_x64-setup.exe` | Windows NSIS installer |
+            | `Tibia Client Editor_*_x64-setup.exe.sig` | Updater signature |
+            | `latest.json` | Updater metadata |
+          releaseDraft: false
+          prerelease: false
+          uploadUpdaterJson: true
+          uploadUpdaterSignatures: true
+          updaterJsonPreferNsis: true
+          releaseAssetNamePattern: "Tibia-Client-Editor_[version]_x64[setup][ext]"
+          args: --bundles nsis
+
+      - name: Verify NSIS installer was built
+        shell: pwsh
+        run: |
+          $installer = Get-ChildItem -Path "src-tauri/target/release/bundle/nsis" -Filter "*-setup.exe" -ErrorAction SilentlyContinue
+          if (-not $installer) {
+            Write-Error "NSIS setup.exe was not produced under src-tauri/target/release/bundle/nsis"
+          }
+          Write-Host "Built installer(s):"
+          $installer | ForEach-Object { Write-Host $_.FullName }
+
+      - name: Release summary
+        shell: pwsh
+        run: |
+          Write-Host "Release URL: ${{ steps.tauri.outputs.releaseHtmlUrl }}"
+          Write-Host "Artifacts: ${{ steps.tauri.outputs.artifactPaths }}"

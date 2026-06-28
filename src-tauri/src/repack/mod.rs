@@ -38,7 +38,11 @@ pub struct RepackResult {
 
 pub fn repack(src: &Path, dst: &Path, platform: &str) -> Result<RepackResult, RepackError> {
     let mut logs = Vec::new();
-    logs.push(format!("Repacking {} into {}", src.display(), dst.display()));
+    logs.push(format!(
+        "Repacking {} into {}",
+        src.display(),
+        dst.display()
+    ));
 
     let client_file_path = src.join("client.json");
     let assets_file_path = src.join("assets.json");

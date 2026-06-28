@@ -150,7 +150,11 @@ impl BattleyePatch {
             .collect()
     }
 
-    pub fn expected_offset_misses(&self, data: &[u8], sha256_text: &str) -> Vec<KnownPatchOffsetRaw> {
+    pub fn expected_offset_misses(
+        &self,
+        data: &[u8],
+        sha256_text: &str,
+    ) -> Vec<KnownPatchOffsetRaw> {
         self.expected_offsets
             .iter()
             .filter(|e| e.applies_to_sha256(sha256_text))
@@ -462,21 +466,91 @@ pub struct ClientCheckIndicator {
 
 pub fn client_check_indicators() -> Vec<ClientCheckIndicator> {
     vec![
-        ClientCheckIndicator { name: "BEClient", value: b"BEClient" },
-        ClientCheckIndicator { name: "clientcheck_disconnected", value: b"clientcheck_disconnected" },
-        ClientCheckIndicator { name: "requestCloseDueToClientCheck", value: b"requestCloseDueToClientCheck" },
-        ClientCheckIndicator { name: "onCloseDueToClientCheckRequested", value: b"onCloseDueToClientCheckRequested" },
-        ClientCheckIndicator { name: "onClientCheckDialogButtonClicked", value: b"onClientCheckDialogButtonClicked" },
-        ClientCheckIndicator { name: "enableClientCheck", value: b"enableClientCheck" },
+        ClientCheckIndicator {
+            name: "BEClient",
+            value: b"BEClient",
+        },
+        ClientCheckIndicator {
+            name: "clientcheck_disconnected",
+            value: b"clientcheck_disconnected",
+        },
+        ClientCheckIndicator {
+            name: "requestCloseDueToClientCheck",
+            value: b"requestCloseDueToClientCheck",
+        },
+        ClientCheckIndicator {
+            name: "onCloseDueToClientCheckRequested",
+            value: b"onCloseDueToClientCheckRequested",
+        },
+        ClientCheckIndicator {
+            name: "onClientCheckDialogButtonClicked",
+            value: b"onClientCheckDialogButtonClicked",
+        },
+        ClientCheckIndicator {
+            name: "enableClientCheck",
+            value: b"enableClientCheck",
+        },
     ]
 }
 
 pub fn client_check_code_patterns() -> Vec<BytePattern> {
     vec![
-        new_byte_pattern("short JNE followed by CALL", &[0x75, WILDCARD_BYTE, 0xe8, WILDCARD_BYTE, WILDCARD_BYTE, WILDCARD_BYTE, WILDCARD_BYTE]),
-        new_byte_pattern("short JE followed by CALL", &[0x74, WILDCARD_BYTE, 0xe8, WILDCARD_BYTE, WILDCARD_BYTE, WILDCARD_BYTE, WILDCARD_BYTE]),
-        new_byte_pattern("near JNE followed by CALL", &[0x0f, 0x85, WILDCARD_BYTE, WILDCARD_BYTE, WILDCARD_BYTE, WILDCARD_BYTE, 0xe8, WILDCARD_BYTE, WILDCARD_BYTE, WILDCARD_BYTE, WILDCARD_BYTE]),
-        new_byte_pattern("near JE followed by CALL", &[0x0f, 0x84, WILDCARD_BYTE, WILDCARD_BYTE, WILDCARD_BYTE, WILDCARD_BYTE, 0xe8, WILDCARD_BYTE, WILDCARD_BYTE, WILDCARD_BYTE, WILDCARD_BYTE]),
+        new_byte_pattern(
+            "short JNE followed by CALL",
+            &[
+                0x75,
+                WILDCARD_BYTE,
+                0xe8,
+                WILDCARD_BYTE,
+                WILDCARD_BYTE,
+                WILDCARD_BYTE,
+                WILDCARD_BYTE,
+            ],
+        ),
+        new_byte_pattern(
+            "short JE followed by CALL",
+            &[
+                0x74,
+                WILDCARD_BYTE,
+                0xe8,
+                WILDCARD_BYTE,
+                WILDCARD_BYTE,
+                WILDCARD_BYTE,
+                WILDCARD_BYTE,
+            ],
+        ),
+        new_byte_pattern(
+            "near JNE followed by CALL",
+            &[
+                0x0f,
+                0x85,
+                WILDCARD_BYTE,
+                WILDCARD_BYTE,
+                WILDCARD_BYTE,
+                WILDCARD_BYTE,
+                0xe8,
+                WILDCARD_BYTE,
+                WILDCARD_BYTE,
+                WILDCARD_BYTE,
+                WILDCARD_BYTE,
+            ],
+        ),
+        new_byte_pattern(
+            "near JE followed by CALL",
+            &[
+                0x0f,
+                0x84,
+                WILDCARD_BYTE,
+                WILDCARD_BYTE,
+                WILDCARD_BYTE,
+                WILDCARD_BYTE,
+                0xe8,
+                WILDCARD_BYTE,
+                WILDCARD_BYTE,
+                WILDCARD_BYTE,
+                WILDCARD_BYTE,
+            ],
+        ),
     ]
 }
 

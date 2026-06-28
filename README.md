@@ -45,6 +45,39 @@ bun run tauri:dev
 bun run tauri:build
 ```
 
+## Auto-updater and releases
+
+The app uses the [Tauri updater plugin](https://v2.tauri.app/plugin/updater/) and checks GitHub releases on startup for a newer Windows build.
+
+### Release a new version
+
+1. Bump `version` in `package.json`, `src-tauri/tauri.conf.json`, and `src-tauri/Cargo.toml`.
+2. Commit the version bump.
+3. Create and push a tag (must match the app version):
+
+```bash
+git tag v0.1.0
+git push origin v0.1.0
+```
+
+GitHub Actions (`.github/workflows/release.yml`) builds on each `v*` tag push and publishes a GitHub release with:
+
+| Asset | Purpose |
+| --- | --- |
+| `Tibia-Client-Editor_<version>_x64-setup.exe` | Windows NSIS installer for fresh installs |
+| `Tibia-Client-Editor_<version>_x64-setup.exe.sig` | Updater signature |
+| `latest.json` | Auto-update metadata for installed apps |
+
+### One-time CI setup
+
+Add the updater signing private key as a repository secret (generate locally with `bun run tauri signer generate -w src-tauri/.tauri/tibia-client-editor.key` if needed):
+
+```bash
+gh secret set TAURI_SIGNING_PRIVATE_KEY < src-tauri/.tauri/tibia-client-editor.key
+```
+
+If the key has a password, also set `TAURI_SIGNING_PRIVATE_KEY_PASSWORD`. The matching public key is already configured in `src-tauri/tauri.conf.json`.
+
 ## RSA keys
 
 Same behavior as [opentibiabr/client-editor](https://github.com/opentibiabr/client-editor):

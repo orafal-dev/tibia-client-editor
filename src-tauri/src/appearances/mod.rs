@@ -2,8 +2,8 @@ pub mod proto {
     include!(concat!(env!("OUT_DIR"), "/appearances.rs"));
 }
 
-mod flags;
 pub mod config;
+mod flags;
 
 use std::collections::HashMap;
 use std::fs;
@@ -56,8 +56,8 @@ pub fn edit_appearances(
     let mut logs = Vec::new();
 
     let data = fs::read(appearances_path).map_err(AppearancesError::Read)?;
-    let mut appearances_data =
-        Appearances::decode(data.as_slice()).map_err(|e| AppearancesError::Protobuf(e.to_string()))?;
+    let mut appearances_data = Appearances::decode(data.as_slice())
+        .map_err(|e| AppearancesError::Protobuf(e.to_string()))?;
 
     let edits = resolve_edits(config_path, edits)?;
     logs.push(format!("Loaded {} appearance edit(s)", edits.len()));
@@ -65,10 +65,9 @@ pub fn edit_appearances(
     let edit_map: HashMap<u32, AppearanceEdit> = edits
         .into_iter()
         .map(|e| {
-            let id: u32 = e
-                .id
-                .parse()
-                .map_err(|_| AppearancesError::InvalidId(e.id.clone()))?;
+            let id: u32 =
+                e.id.parse()
+                    .map_err(|_| AppearancesError::InvalidId(e.id.clone()))?;
             Ok((id, e))
         })
         .collect::<Result<_, AppearancesError>>()?;
@@ -89,8 +88,7 @@ pub fn edit_appearances(
         .map(PathBuf::from)
         .unwrap_or_else(|| PathBuf::from("appearances.out.dat"));
 
-    let out = appearances_data
-        .encode_to_vec();
+    let out = appearances_data.encode_to_vec();
     fs::write(&out_path, &out).map_err(AppearancesError::Write)?;
 
     logs.push(format!(

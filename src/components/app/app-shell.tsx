@@ -16,6 +16,7 @@ import { EditPanel } from "@/components/app/edit-panel";
 import { RepackPanel } from "@/components/app/repack-panel";
 import { Win2MacPanel } from "@/components/app/win2mac-panel";
 import { ThemeToggle } from "@/components/app/theme-toggle";
+import { AppUpdater } from "@/components/app/app-updater";
 import { useHydrateConfigStore } from "@/hooks/use-config-store";
 import { Spinner } from "@/components/ui/spinner";
 
@@ -31,7 +32,9 @@ export const AppShell = () => {
   }
 
   return (
-    <Tabs defaultValue="config" className="flex h-full min-h-0 flex-col gap-0 overflow-hidden bg-background">
+    <>
+      <AppUpdater />
+      <Tabs defaultValue="config" className="flex h-full min-h-0 flex-col gap-0 overflow-hidden bg-background">
       <header className="shrink-0 border-b bg-card/50">
         <div className="flex items-start justify-between gap-4 px-6 pt-4 lg:px-8">
           <div className="min-w-0 flex-1 space-y-1">
@@ -92,5 +95,6 @@ export const AppShell = () => {
         <Win2MacPanel />
       </TabsContent>
     </Tabs>
+    </>
   );
 };

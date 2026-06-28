@@ -5,7 +5,9 @@ use super::patterns::{
     PATCH_CONTEXT_RADIUS, WILDCARD_BYTE,
 };
 use super::types::LogSink;
-use super::util::{bytes_around_range, format_bytes, format_offsets_limited, is_windows_executable};
+use super::util::{
+    bytes_around_range, format_bytes, format_offsets_limited, is_windows_executable,
+};
 
 pub fn remove_battleye(
     log: &mut LogSink,
@@ -41,7 +43,10 @@ pub fn remove_battleye(
         let patched_offsets = patch.patched.find_all(tibia_binary);
 
         if patch.diagnostic_only {
-            if !original_offsets.is_empty() && aggressive && !patch.aggressive_replacement.is_empty() {
+            if !original_offsets.is_empty()
+                && aggressive
+                && !patch.aggressive_replacement.is_empty()
+            {
                 let mut aggressive_patch = patch.clone();
                 aggressive_patch.diagnostic_only = false;
                 aggressive_patch.replacement = patch.aggressive_replacement.clone();
@@ -139,16 +144,24 @@ fn apply_battleye_patch(
     }
 
     for &offset in offsets {
-        let (context_start, before_bytes) =
-            bytes_around_range(tibia_binary, offset, patch.replacement.len(), PATCH_CONTEXT_RADIUS);
+        let (context_start, before_bytes) = bytes_around_range(
+            tibia_binary,
+            offset,
+            patch.replacement.len(),
+            PATCH_CONTEXT_RADIUS,
+        );
         for (index, &value) in patch.replacement.iter().enumerate() {
             if value == WILDCARD_BYTE {
                 continue;
             }
             tibia_binary[offset + index] = value as u8;
         }
-        let (_, after_bytes) =
-            bytes_around_range(tibia_binary, offset, patch.replacement.len(), PATCH_CONTEXT_RADIUS);
+        let (_, after_bytes) = bytes_around_range(
+            tibia_binary,
+            offset,
+            patch.replacement.len(),
+            PATCH_CONTEXT_RADIUS,
+        );
         let context_end = context_start + before_bytes.len();
         log.info(format!(
             "  bytes before @0x{context_start:X}..0x{context_end:X}: {}",

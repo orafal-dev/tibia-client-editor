@@ -5,7 +5,9 @@ use super::error::{EditError, EditResult};
 use super::patterns::URL_PROPERTIES;
 use super::types::LogSink;
 
-pub fn validate_config_values(mut values: HashMap<String, String>) -> EditResult<HashMap<String, String>> {
+pub fn validate_config_values(
+    mut values: HashMap<String, String>,
+) -> EditResult<HashMap<String, String>> {
     let mut missing = Vec::new();
     for prop in URL_PROPERTIES {
         if !values.contains_key(*prop) {
@@ -36,8 +38,8 @@ pub fn resolve_config_values(
 }
 
 pub fn load_config_values(config_path: &Path) -> EditResult<HashMap<String, String>> {
-    let content = std::fs::read_to_string(config_path)
-        .map_err(|e| EditError::Config(e.to_string()))?;
+    let content =
+        std::fs::read_to_string(config_path).map_err(|e| EditError::Config(e.to_string()))?;
     let parsed: toml::Value =
         toml::from_str(&content).map_err(|e| EditError::Config(e.to_string()))?;
 
@@ -125,7 +127,10 @@ pub fn sync_config_ini(
 
 fn resolve_config_ini_path(tibia_path: &Path) -> (PathBuf, bool) {
     let tibia_dir = tibia_path.parent().unwrap_or_else(|| Path::new("."));
-    let conf_config_path = tibia_dir.join("..").join(CONFIG_INI_DIR_NAME).join(CONFIG_INI_FILE_NAME);
+    let conf_config_path = tibia_dir
+        .join("..")
+        .join(CONFIG_INI_DIR_NAME)
+        .join(CONFIG_INI_FILE_NAME);
     let bin_config_path = tibia_dir.join(CONFIG_INI_FILE_NAME);
 
     for candidate in [&conf_config_path, &bin_config_path] {
@@ -134,7 +139,11 @@ fn resolve_config_ini_path(tibia_path: &Path) -> (PathBuf, bool) {
         }
     }
 
-    if conf_config_path.parent().map(|p| p.is_dir()).unwrap_or(false) {
+    if conf_config_path
+        .parent()
+        .map(|p| p.is_dir())
+        .unwrap_or(false)
+    {
         return (conf_config_path, false);
     }
 
@@ -221,7 +230,9 @@ fn parse_embedded_config_ini(config_data: &[u8]) -> Option<EmbeddedConfigIni> {
         return None;
     }
     for section in &config.sections {
-        config.section_by_name.insert(section.name.clone(), section.clone());
+        config
+            .section_by_name
+            .insert(section.name.clone(), section.clone());
     }
     Some(config)
 }
@@ -272,28 +283,33 @@ fn update_config_ini_content(
     let mut current_section = String::new();
     let mut current_managed = false;
 
-    let append_missing_keys =
-        |output: &mut Vec<String>, section_name: &str, seen_keys: &mut HashMap<String, HashMap<String, ()>>, added_count: &mut usize| {
-            let Some(section) = embedded.section_by_name.get(section_name) else {
-                return;
-            };
-            let section_keys = seen_keys
-                .entry(section_name.to_string())
-                .or_default();
-            for item in &section.keys {
-                if section_keys.contains_key(&item.key) {
-                    continue;
-                }
-                output.push(format!("{}={}", item.key, item.value));
-                section_keys.insert(item.key.clone(), ());
-                *added_count += 1;
-            }
+    let append_missing_keys = |output: &mut Vec<String>,
+                               section_name: &str,
+                               seen_keys: &mut HashMap<String, HashMap<String, ()>>,
+                               added_count: &mut usize| {
+        let Some(section) = embedded.section_by_name.get(section_name) else {
+            return;
         };
+        let section_keys = seen_keys.entry(section_name.to_string()).or_default();
+        for item in &section.keys {
+            if section_keys.contains_key(&item.key) {
+                continue;
+            }
+            output.push(format!("{}={}", item.key, item.value));
+            section_keys.insert(item.key.clone(), ());
+            *added_count += 1;
+        }
+    };
 
     for line in lines {
         if let Some(section_name) = parse_config_ini_section_line(&line) {
             if current_managed {
-                append_missing_keys(&mut output, &current_section, &mut seen_keys, &mut added_count);
+                append_missing_keys(
+                    &mut output,
+                    &current_section,
+                    &mut seen_keys,
+                    &mut added_count,
+                );
             }
             current_section = section_name.clone();
             current_managed = embedded.section_by_name.contains_key(&current_section);
@@ -331,7 +347,12 @@ fn update_config_ini_content(
     }
 
     if current_managed {
-        append_missing_keys(&mut output, &current_section, &mut seen_keys, &mut added_count);
+        append_missing_keys(
+            &mut output,
+            &current_section,
+            &mut seen_keys,
+            &mut added_count,
+        );
     }
 
     for section in &embedded.sections {
@@ -354,7 +375,13 @@ fn update_config_ini_content(
 
     let mut result = output.join(line_ending);
     result.push_str(line_ending);
-    (result.into_bytes(), changed_count, added_count, removed_count, true)
+    (
+        result.into_bytes(),
+        changed_count,
+        added_count,
+        removed_count,
+        true,
+    )
 }
 
 fn split_config_ini_lines(config_data: &[u8]) -> Vec<String> {

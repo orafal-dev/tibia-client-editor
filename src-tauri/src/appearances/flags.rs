@@ -8,7 +8,10 @@ use super::proto::{
     AppearanceFlagWrite, AppearanceFlagWriteOnce, AppearanceFlags,
 };
 
-pub fn merge_flags(existing: Option<AppearanceFlags>, edit: &std::collections::HashMap<String, Value>) -> AppearanceFlags {
+pub fn merge_flags(
+    existing: Option<AppearanceFlags>,
+    edit: &std::collections::HashMap<String, Value>,
+) -> AppearanceFlags {
     let mut flags = existing.unwrap_or_default();
     for (key, value) in edit {
         apply_field(&mut flags, key, value);

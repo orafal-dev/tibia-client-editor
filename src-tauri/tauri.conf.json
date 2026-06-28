@@ -2,7 +2,7 @@
   "$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
   "productName": "Tibia Client Editor",
   "version": "0.1.0",
-  "identifier": "com.opentibiabr.clienteditor",
+  "identifier": "com.orafal-dev.tibia-client-editor",
   "build": {
     "frontendDist": "../out",
     "devUrl": "http://localhost:1420",
@@ -27,13 +27,35 @@
   },
   "bundle": {
     "active": true,
-    "targets": "all",
+    "targets": ["nsis"],
+    "createUpdaterArtifacts": true,
     "icon": [
       "icons/32x32.png",
       "icons/128x128.png",
       "icons/128x128@2x.png",
       "icons/icon.icns",
       "icons/icon.ico"
-    ]
+    ],
+    "windows": {
+      "webviewInstallMode": {
+        "type": "downloadBootstrapper",
+        "silent": true
+      },
+      "nsis": {
+        "installerIcon": "icons/icon.ico",
+        "displayLanguageSelector": false
+      }
+    }
+  },
+  "plugins": {
+    "updater": {
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDdEQ0M3OTlENDA1M0Y1NDAKUldSQTlWTkFuWG5NZlZwQ2pwS0FPZ252RzZyTEhCUjlBOHI5ckY0VWJndEJPaTlpYm5YQlFrQm0K",
+      "endpoints": [
+        "https://github.com/orafal-dev/tibia-client-editor/releases/latest/download/latest.json"
+      ],
+      "windows": {
+        "installMode": "passive"
+      }
+    }
   }
 }

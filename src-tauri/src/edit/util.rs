@@ -7,7 +7,10 @@ pub fn find_all_offsets(data: &[u8], needle: &[u8]) -> Vec<usize> {
     }
     let mut search_offset = 0;
     while search_offset <= data.len().saturating_sub(needle.len()) {
-        let Some(index) = data[search_offset..].windows(needle.len()).position(|w| w == needle) else {
+        let Some(index) = data[search_offset..]
+            .windows(needle.len())
+            .position(|w| w == needle)
+        else {
             break;
         };
         let offset = search_offset + index;
@@ -88,7 +91,12 @@ pub fn bytes_around(data: &[u8], center: usize, radius: usize) -> (usize, Vec<u8
     (start, data[start..end].to_vec())
 }
 
-pub fn bytes_around_range(data: &[u8], start: usize, length: usize, radius: usize) -> (usize, Vec<u8>) {
+pub fn bytes_around_range(
+    data: &[u8],
+    start: usize,
+    length: usize,
+    radius: usize,
+) -> (usize, Vec<u8>) {
     if data.is_empty() || start >= data.len() || length == 0 {
         return (0, Vec::new());
     }
@@ -144,7 +152,10 @@ pub fn is_windows_executable(data: &[u8]) -> bool {
         && data[pe_offset + 3] == 0
 }
 
-pub fn resolve_source_executable(tibia_exe: &std::path::Path, source: Option<&std::path::Path>) -> std::path::PathBuf {
+pub fn resolve_source_executable(
+    tibia_exe: &std::path::Path,
+    source: Option<&std::path::Path>,
+) -> std::path::PathBuf {
     if let Some(src) = source {
         return src.to_path_buf();
     }
@@ -157,4 +168,3 @@ pub fn resolve_source_executable(tibia_exe: &std::path::Path, source: Option<&st
     }
     tibia_exe.to_path_buf()
 }
-

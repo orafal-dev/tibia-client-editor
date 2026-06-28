@@ -11,11 +11,17 @@ pub fn replace_tibia_rsa_key(log: &mut LogSink, tibia_binary: &mut Vec<u8>) -> E
 
     log.info("Searching for Tibia RSA...");
 
-    if tibia_binary.windows(tibia_rsa.len()).any(|w| w == tibia_rsa.as_slice()) {
+    if tibia_binary
+        .windows(tibia_rsa.len())
+        .any(|w| w == tibia_rsa.as_slice())
+    {
         log.info("Tibia RSA found!");
         replace_first_occurrence(tibia_binary, &tibia_rsa, &otserv_rsa);
         log.patch("Tibia RSA replaced with OTServ RSA!");
-    } else if tibia_binary.windows(otserv_rsa.len()).any(|w| w == otserv_rsa.as_slice()) {
+    } else if tibia_binary
+        .windows(otserv_rsa.len())
+        .any(|w| w == otserv_rsa.as_slice())
+    {
         log.warn("OTServ RSA already patched!");
     } else {
         return Err(EditError::RsaNotFound);
@@ -43,10 +49,7 @@ pub fn set_property_by_name(
     };
 
     let start_value = property_index + property_key.len();
-    let Some(newline_offset) = tibia_binary[start_value..]
-        .iter()
-        .position(|&b| b == b'\n')
-    else {
+    let Some(newline_offset) = tibia_binary[start_value..].iter().position(|&b| b == b'\n') else {
         log.warn(format!("{property_key} value terminator not found!"));
         return false;
     };

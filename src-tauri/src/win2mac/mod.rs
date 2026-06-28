@@ -38,7 +38,9 @@ pub fn win2mac(src: &Path, dst: &Path) -> Result<Win2MacResult, Win2MacError> {
     }
 
     save_assets_info(dst, &assets_info)?;
-    logs.push(format!("Updated {count} file entries with macOS resource paths"));
+    logs.push(format!(
+        "Updated {count} file entries with macOS resource paths"
+    ));
 
     Ok(Win2MacResult {
         logs,

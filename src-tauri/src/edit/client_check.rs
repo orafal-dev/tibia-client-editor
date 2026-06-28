@@ -1,9 +1,9 @@
 use std::collections::HashSet;
 
 use super::patterns::{
-    client_check_code_patterns, client_check_indicators, battleye_patches,
-    CODE_CONTEXT_RADIUS, CONTEXT_BYTES_RADIUS, KNOWN_PATCH_CONTEXT_RADIUS,
-    QT_CONTEXT_INDICATORS, patchable_battleye_patch_count,
+    battleye_patches, client_check_code_patterns, client_check_indicators,
+    patchable_battleye_patch_count, CODE_CONTEXT_RADIUS, CONTEXT_BYTES_RADIUS,
+    KNOWN_PATCH_CONTEXT_RADIUS, QT_CONTEXT_INDICATORS,
 };
 use super::types::{
     BattleyePatchStatus, ClientCheckFinding, ClientCheckReference, DiagnosisReport,
@@ -234,7 +234,9 @@ fn find_string_code_references(
     dedupe_adjacent_rex_references(references)
 }
 
-fn dedupe_adjacent_rex_references(references: Vec<ClientCheckReference>) -> Vec<ClientCheckReference> {
+fn dedupe_adjacent_rex_references(
+    references: Vec<ClientCheckReference>,
+) -> Vec<ClientCheckReference> {
     let mut deduped: Vec<ClientCheckReference> = Vec::new();
     for reference in references {
         if let Some(previous) = deduped.last() {
@@ -294,18 +296,25 @@ fn enrich_code_reference_context(
     patch_statuses: &[BattleyePatchStatus],
     indicator_name: &str,
 ) -> ClientCheckReference {
-    let window_start = reference.offset.saturating_sub(CODE_CONTEXT_RADIUS).max(section.raw_start);
+    let window_start = reference
+        .offset
+        .saturating_sub(CODE_CONTEXT_RADIUS)
+        .max(section.raw_start);
     let window_end = (reference.offset + CODE_CONTEXT_RADIUS).min(section.raw_end);
     reference.branch_offsets = find_conditional_branches(data, window_start, window_end);
     reference.call_offsets = find_calls(data, window_start, window_end);
     reference.pattern_matches = find_code_pattern_matches(data, window_start, window_end);
-    reference.known_patch_nearby =
-        has_known_patch_nearby(patch_statuses, &reference.context_offsets(), KNOWN_PATCH_CONTEXT_RADIUS);
+    reference.known_patch_nearby = has_known_patch_nearby(
+        patch_statuses,
+        &reference.context_offsets(),
+        KNOWN_PATCH_CONTEXT_RADIUS,
+    );
     let (context_start, context_bytes) = bytes_around(data, reference.offset, CONTEXT_BYTES_RADIUS);
     reference.context_start = context_start;
     reference.context_bytes = context_bytes;
     reference.strong_unsupported = is_strong_client_check_evidence(indicator_name, &reference);
-    reference.suspicious_active = is_suspicious_active_client_check_evidence(indicator_name, &reference);
+    reference.suspicious_active =
+        is_suspicious_active_client_check_evidence(indicator_name, &reference);
     reference.possible_instructions = format_possible_instructions(&reference);
     reference
 }
@@ -438,7 +447,10 @@ fn is_critical_client_check_indicator(indicator_name: &str) -> bool {
 fn scan_qt_context_indicators(data: &[u8], pe_data: &PeInfo) -> Vec<String> {
     let mut seen = HashSet::new();
     for indicator in QT_CONTEXT_INDICATORS {
-        if data.windows(indicator.len()).any(|w| w == indicator.as_bytes()) {
+        if data
+            .windows(indicator.len())
+            .any(|w| w == indicator.as_bytes())
+        {
             seen.insert(format!("{indicator} string"));
         }
         let lower = indicator.to_lowercase();
@@ -457,7 +469,9 @@ pub fn client_check_verdict(report: &DiagnosisReport) -> String {
     if strong_unsupported_evidence_count(report) > 0 {
         return "UNSUPPORTED: client-check code evidence remains".to_string();
     }
-    if has_patched_client_check_signature(report) && high_risk_client_check_diagnostic_count(report) > 0 {
+    if has_patched_client_check_signature(report)
+        && high_risk_client_check_diagnostic_count(report) > 0
+    {
         return "WARNING: high risk of client-check remaining after known patch".to_string();
     }
     if has_patched_client_check_signature(report) && suspicious_active_evidence_count(report) > 0 {
@@ -545,7 +559,10 @@ pub fn has_unsafe_client_check_remainder(report: &DiagnosisReport) -> bool {
 
 pub fn has_client_check_string_indicators(data: &[u8]) -> bool {
     for indicator in client_check_indicators() {
-        if data.windows(indicator.value.len()).any(|w| w == indicator.value) {
+        if data
+            .windows(indicator.value.len())
+            .any(|w| w == indicator.value)
+        {
             return true;
         }
         let utf16 = utf16_le_bytes(std::str::from_utf8(indicator.value).unwrap_or(""));
@@ -557,7 +574,10 @@ pub fn has_client_check_string_indicators(data: &[u8]) -> bool {
 }
 
 pub fn log_client_check_support_summary(log: &mut LogSink, report: &DiagnosisReport) {
-    log.info(format!("Client-check support verdict: {}", report.client_check_verdict));
+    log.info(format!(
+        "Client-check support verdict: {}",
+        report.client_check_verdict
+    ));
     log.info(format!(
         "Known byte-patch coverage: {}/{} signature(s), original={}, patched={}",
         report.known_patch_coverage,
@@ -573,7 +593,10 @@ pub fn log_client_check_support_summary(log: &mut LogSink, report: &DiagnosisRep
     log_suspicious_active_evidence(log, report);
     log_weak_indicators(log, report);
     if !report.qt_indicators.is_empty() {
-        log.info(format!("Qt context indicators: {}", report.qt_indicators.join(", ")));
+        log.info(format!(
+            "Qt context indicators: {}",
+            report.qt_indicators.join(", ")
+        ));
     }
     if report.strong_unsupported_evidence_count > 0 {
         log.error(format!(
@@ -759,19 +782,22 @@ fn format_possible_instructions(reference: &ClientCheckReference) -> String {
     while index < reference.context_bytes.len() {
         let offset = reference.context_start + index;
         let data = &reference.context_bytes[index..];
-        if data.len() >= 7 && data[0] == 0x48 && data[1] == 0x8d && (data[2] == 0x15 || data[2] == 0x0d) {
+        if data.len() >= 7
+            && data[0] == 0x48
+            && data[1] == 0x8d
+            && (data[2] == 0x15 || data[2] == 0x0d)
+        {
             let register = if data[2] == 0x15 { "rdx" } else { "rcx" };
             let displacement = i32::from_le_bytes(data[3..7].try_into().unwrap());
             let target = offset as i64 + 7 + displacement as i64;
-            instructions.push(format!("0x{offset:X}: lea {register},[rip{displacement:+}] -> 0x{target:X}"));
+            instructions.push(format!(
+                "0x{offset:X}: lea {register},[rip{displacement:+}] -> 0x{target:X}"
+            ));
             index += 7;
             continue;
         }
         if data.len() >= 4 && data[0] == 0x48 && data[1] == 0x8d && data[2] == 0x4d {
-            instructions.push(format!(
-                "0x{offset:X}: lea rcx,[rbp{}]",
-                data[3] as i8
-            ));
+            instructions.push(format!("0x{offset:X}: lea rcx,[rbp{}]", data[3] as i8));
             index += 4;
             continue;
         }
@@ -791,7 +817,9 @@ fn format_possible_instructions(reference: &ClientCheckReference) -> String {
         if data.len() >= 6 && data[0] == 0xff && data[1] == 0x15 {
             let displacement = i32::from_le_bytes(data[2..6].try_into().unwrap());
             let target = offset as i64 + 6 + displacement as i64;
-            instructions.push(format!("0x{offset:X}: call qword [rip{displacement:+}] -> 0x{target:X}"));
+            instructions.push(format!(
+                "0x{offset:X}: call qword [rip{displacement:+}] -> 0x{target:X}"
+            ));
             index += 6;
             continue;
         }
@@ -808,22 +836,36 @@ fn format_possible_instructions(reference: &ClientCheckReference) -> String {
             index += 2;
             continue;
         }
-        if is_conditional_jump(&reference.context_bytes, index, reference.context_bytes.len()) {
+        if is_conditional_jump(
+            &reference.context_bytes,
+            index,
+            reference.context_bytes.len(),
+        ) {
             if (0x70..=0x7f).contains(&data[0]) && data.len() >= 2 {
                 let target = offset as i64 + 2 + data[1] as i8 as i64;
-                instructions.push(format!("0x{offset:X}: jcc short 0x{:02X} -> 0x{target:X}", data[0]));
+                instructions.push(format!(
+                    "0x{offset:X}: jcc short 0x{:02X} -> 0x{target:X}",
+                    data[0]
+                ));
                 index += 2;
                 continue;
             }
             if data.len() >= 6 && data[0] == 0x0f {
                 let displacement = i32::from_le_bytes(data[2..6].try_into().unwrap());
                 let target = offset as i64 + 6 + displacement as i64;
-                instructions.push(format!("0x{offset:X}: jcc near 0x{:02X} -> 0x{target:X}", data[1]));
+                instructions.push(format!(
+                    "0x{offset:X}: jcc near 0x{:02X} -> 0x{target:X}",
+                    data[1]
+                ));
                 index += 6;
                 continue;
             }
         }
-        if data.len() >= 4 && data[0] == 0x48 && data[1] == 0x83 && (data[2] == 0xec || data[2] == 0xc4) {
+        if data.len() >= 4
+            && data[0] == 0x48
+            && data[1] == 0x83
+            && (data[2] == 0xec || data[2] == 0xc4)
+        {
             let op = if data[2] == 0xc4 { "add" } else { "sub" };
             instructions.push(format!("0x{offset:X}: {op} rsp,0x{:X}", data[3]));
             index += 4;
@@ -835,7 +877,11 @@ fn format_possible_instructions(reference: &ClientCheckReference) -> String {
         return "none".to_string();
     }
     if instructions.len() > 10 {
-        return format!("{}; ... +{} more", instructions[..10].join("; "), instructions.len() - 10);
+        return format!(
+            "{}; ... +{} more",
+            instructions[..10].join("; "),
+            instructions.len() - 10
+        );
     }
     instructions.join("; ")
 }
@@ -861,7 +907,10 @@ pub fn log_battleye_signature_report(log: &mut LogSink, report: &DiagnosisReport
                 format_offsets_limited(&status.patched_offset, 0)
             ));
         } else {
-            log.info(format!("{:?} ({signature_kind}) signature not found", status.name));
+            log.info(format!(
+                "{:?} ({signature_kind}) signature not found",
+                status.name
+            ));
         }
         for expected in &status.expected_offset_hits {
             log.info(format!(
@@ -877,7 +926,10 @@ pub fn log_battleye_signature_report(log: &mut LogSink, report: &DiagnosisReport
         }
         if status.diagnostic_only && !status.false_positive_check.is_empty() {
             log.info(format!("  aob mask: {}", status.aob_mask));
-            log.info(format!("  false-positive guard: {}", status.false_positive_check));
+            log.info(format!(
+                "  false-positive guard: {}",
+                status.false_positive_check
+            ));
         }
     }
 }
@@ -895,10 +947,16 @@ pub fn patch_state_by_name(report: &DiagnosisReport, name: &str) -> String {
             );
         }
         if !status.original_offset.is_empty() {
-            return format!("original at {}", format_offsets_limited(&status.original_offset, 4));
+            return format!(
+                "original at {}",
+                format_offsets_limited(&status.original_offset, 4)
+            );
         }
         if !status.patched_offset.is_empty() {
-            return format!("patched at {}", format_offsets_limited(&status.patched_offset, 4));
+            return format!(
+                "patched at {}",
+                format_offsets_limited(&status.patched_offset, 4)
+            );
         }
         return "absent".to_string();
     }
@@ -916,11 +974,19 @@ pub fn client_check_indicator_keys(report: &DiagnosisReport) -> Vec<String> {
 }
 
 pub fn client_check_indicator_count(report: &DiagnosisReport) -> usize {
-    report.client_check_findings.iter().map(|f| f.offsets.len()).sum()
+    report
+        .client_check_findings
+        .iter()
+        .map(|f| f.offsets.len())
+        .sum()
 }
 
 pub fn client_check_code_reference_count(report: &DiagnosisReport) -> usize {
-    report.client_check_findings.iter().map(|f| f.references.len()).sum()
+    report
+        .client_check_findings
+        .iter()
+        .map(|f| f.references.len())
+        .sum()
 }
 
 pub fn suspicious_active_indicator_keys(report: &DiagnosisReport) -> Vec<String> {

@@ -19,8 +19,8 @@ pub fn edits_from_inputs(edits: Vec<AppearanceEdit>) -> Vec<AppearanceEdit> {
 pub fn load_edits(config_path: &Path) -> Result<Vec<AppearanceEdit>, AppearancesError> {
     let content = std::fs::read_to_string(config_path)
         .map_err(|e| AppearancesError::Config(e.to_string()))?;
-    let parsed: TomlValue = toml::from_str(&content)
-        .map_err(|e| AppearancesError::Config(e.to_string()))?;
+    let parsed: TomlValue =
+        toml::from_str(&content).map_err(|e| AppearancesError::Config(e.to_string()))?;
 
     let Some(TomlValue::Array(edits)) = parsed.get("edit") else {
         return Ok(Vec::new());
