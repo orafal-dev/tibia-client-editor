@@ -17,7 +17,7 @@ Licensed under the GNU General Public License v3.0 — see [LICENSE](./LICENSE).
 ## Stack
 
 - **Backend:** Rust (Tauri 2) — binary patching, BattlEye signatures, PE diagnosis, repack, appearances
-- **Frontend:** Next.js 16, React 19, Tailwind CSS v4
+- **Frontend:** Next.js 16, React 19, Tailwind CSS v4 (Bun)
 - **UI:** [COSS UI](https://coss.com/ui/docs) (via `shadcn` + `@coss/style`)
 
 ## Features
@@ -35,14 +35,14 @@ Licensed under the GNU General Public License v3.0 — see [LICENSE](./LICENSE).
 ```bash
 git clone https://github.com/orafal-dev/tibia-client-editor.git
 cd tibia-client-editor
-npm install
-npm run tauri:dev
+bun install
+bun run tauri:dev
 ```
 
 ## Production build
 
 ```bash
-npm run tauri:build
+bun run tauri:build
 ```
 
 ## RSA keys

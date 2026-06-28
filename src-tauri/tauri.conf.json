@@ -6,8 +6,8 @@
   "build": {
     "frontendDist": "../out",
     "devUrl": "http://localhost:1420",
-    "beforeDevCommand": "npm run dev -- --port 1420",
-    "beforeBuildCommand": "npm run build"
+    "beforeDevCommand": "bun run dev -- --port 1420",
+    "beforeBuildCommand": "bun run build"
   },
   "app": {
     "windows": [

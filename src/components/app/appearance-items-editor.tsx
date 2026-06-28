@@ -4,7 +4,6 @@ import { useMemo } from "react";
 import {
   CopyIcon,
   PlusIcon,
-  SparklesIcon,
   Trash2Icon,
 } from "lucide-react";
 import type { AppearanceEditEntry } from "@/lib/config/config.types";
@@ -38,6 +37,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
+import { ItemPreview } from "@/components/app/item-preview";
 import { cn } from "@/lib/utils";
 
 type AppearanceItemsEditorProps = {
@@ -219,14 +219,18 @@ const SelectedItemEditor = ({
         <div className="grid gap-4 sm:grid-cols-2">
           <Field>
             <FieldLabel htmlFor={`appearance-id-${index}`}>Item ID</FieldLabel>
-            <Input
-              id={`appearance-id-${index}`}
-              value={edit.id}
-              onChange={(event) => onUpdate(index, { id: event.target.value })}
-              disabled={disabled}
-              placeholder="24964"
-              aria-label="Item ID"
-            />
+            <div className="flex items-center gap-3">
+              <ItemPreview key={edit.id} itemId={edit.id} />
+              <Input
+                id={`appearance-id-${index}`}
+                value={edit.id}
+                onChange={(event) => onUpdate(index, { id: event.target.value })}
+                disabled={disabled}
+                placeholder="24964"
+                aria-label="Item ID"
+                className="flex-1"
+              />
+            </div>
             <FieldDescription>
               Client/server item type ID to patch in appearances.dat.
             </FieldDescription>
@@ -310,10 +314,7 @@ export const AppearanceItemsEditor = ({
                   onClick={() => onSelect(index)}
                   aria-label={`Edit item ${edit.label || edit.id || index + 1}`}
                 >
-                  <SparklesIcon
-                    className="mt-0.5 size-4 shrink-0 text-muted-foreground"
-                    aria-hidden="true"
-                  />
+                  <ItemPreview key={`${index}-${edit.id}`} itemId={edit.id} />
                   <div className="min-w-0 flex-1">
                     <div className="truncate font-medium">
                       {edit.label.trim() || `Item ${edit.id.trim() || index + 1}`}
@@ -402,10 +403,7 @@ export const AppearanceItemsEditor = ({
                   onClick={() => onSelect(index)}
                   aria-label={`Edit item ${edit.label || edit.id || index + 1}`}
                 >
-                  <SparklesIcon
-                    className="mt-0.5 size-4 shrink-0 text-muted-foreground"
-                    aria-hidden="true"
-                  />
+                  <ItemPreview key={`${index}-${edit.id}`} itemId={edit.id} />
                   <div className="min-w-0 flex-1">
                     <div className="truncate font-medium text-sm">
                       {edit.label.trim() || `Item ${edit.id.trim() || index + 1}`}
