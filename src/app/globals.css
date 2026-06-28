@@ -239,6 +239,6 @@
     font-family: var(--font-mono);
   }
   html {
-    @apply font-sans font-sans font-mono;
+    @apply font-sans;
   }
 }

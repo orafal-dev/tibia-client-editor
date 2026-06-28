@@ -20,6 +20,12 @@ import { PanelPage } from "@/components/app/panel-page";
 import type { RepackPlatform, RepackResult } from "@/lib/models.types";
 import { repackClient } from "@/lib/tauri/commands";
 
+const REPACK_PLATFORM_ITEMS = [
+  { value: "windows", label: "Windows" },
+  { value: "mac", label: "macOS" },
+  { value: "linux", label: "Linux" },
+] as const;
+
 export const RepackPanel = () => {
   const [src, setSrc] = useState("");
   const [dst, setDst] = useState("");
@@ -95,6 +101,7 @@ export const RepackPanel = () => {
             <div className="grid gap-2">
               <Label htmlFor="repack-platform">Platform</Label>
               <Select
+                items={[...REPACK_PLATFORM_ITEMS]}
                 value={platform}
                 onValueChange={(value) => setPlatform(value as RepackPlatform)}
               >

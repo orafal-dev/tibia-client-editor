@@ -52,6 +52,12 @@ type AppearanceItemsEditorProps = {
   compact?: boolean;
 };
 
+const FLAG_TRI_STATE_ITEMS = [
+  { value: "unset", label: "Default" },
+  { value: "true", label: "On" },
+  { value: "false", label: "Off" },
+] as const;
+
 const FlagTriStateSelect = ({
   id,
   label,
@@ -70,6 +76,7 @@ const FlagTriStateSelect = ({
   <Field className="gap-1.5">
     <FieldLabel htmlFor={id}>{label}</FieldLabel>
     <Select
+      items={[...FLAG_TRI_STATE_ITEMS]}
       value={value}
       onValueChange={(next) => onChange(next as FlagTriState)}
       disabled={disabled}
