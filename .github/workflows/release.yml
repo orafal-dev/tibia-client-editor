@@ -32,7 +32,7 @@ jobs:
 
       - name: Build and publish Windows release
         id: tauri
-        uses: tauri-apps/tauri-action@v1
+        uses: tauri-apps/tauri-action@v0.6.2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
@@ -52,15 +52,14 @@ jobs:
 
             | Asset | Purpose |
             | --- | --- |
-            | `Tibia Client Editor_*_x64-setup.exe` | Windows NSIS installer |
-            | `Tibia Client Editor_*_x64-setup.exe.sig` | Updater signature |
+            | `Tibia-Client-Editor_*_x64-setup.exe` | Windows NSIS installer |
+            | `Tibia-Client-Editor_*_x64-setup.exe.sig` | Updater signature |
             | `latest.json` | Updater metadata |
           releaseDraft: false
           prerelease: false
-          uploadUpdaterJson: true
-          uploadUpdaterSignatures: true
+          includeUpdaterJson: true
           updaterJsonPreferNsis: true
-          releaseAssetNamePattern: "Tibia-Client-Editor_[version]_x64[setup][ext]"
+          assetNamePattern: "Tibia-Client-Editor_[version]_x64[setup][ext]"
           args: --bundles nsis
 
       - name: Verify NSIS installer was built
